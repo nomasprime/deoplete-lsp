@@ -68,11 +68,15 @@ class Source(Base):
             'vim.lsp.util.make_position_params()')
 
         self.vim.call(
-            'luaeval', 'require("deoplete").request_candidates('
+            'luaeval', 'require("candidates").request_candidates('
             '_A.arguments)',
             {'arguments': params})
 
         return []
+
+    def on_event(self, context):
+        if context['event'] == 'InsertEnter':
+            self.vim.call('luaeval', 'require("hover").insert_enter_handler()')
 
     def process_candidates(self):
         candidates = []
