@@ -74,10 +74,6 @@ class Source(Base):
 
         return []
 
-    def on_event(self, context):
-        if context['event'] == 'InsertEnter':
-            self.vim.call('luaeval', 'require("hover").insert_enter_handler()')
-
     def process_candidates(self):
         candidates = []
         results = self.vim.vars['deoplete#source#lsp#_results']
