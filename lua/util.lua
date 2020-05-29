@@ -31,7 +31,6 @@ function M.make_floating_popup_options(width, height, opts)
     ["opts.offset_y"] = { opts.offset_y, 'n', true };
   }
 
-
   local lines_above = vim.fn.winline() - 1
   local lines_below = vim.fn.winheight(0) - lines_above
 
@@ -108,6 +107,9 @@ function M.fancy_floating_markdown(contents, opts)
     max_width = opts.col - 1
   end
 
+  -- Didn't have time to investigate but this fixes popup offset by one display issue
+  max_width = max_width - pad_left - pad_right
+
   do
     local i = 1
     while i <= #contents do
@@ -178,7 +180,7 @@ function M.fancy_floating_markdown(contents, opts)
   if opts.align == 'right' then
     local columns = api.nvim_get_option('columns')
     if opts.col + opts.row + width > columns then
-      width = columns - opts.col - opts.width -1
+      width = columns - opts.col - opts.width - 1
     end
   else
     if width > opts.col then
@@ -252,6 +254,26 @@ function M.fancy_floating_markdown(contents, opts)
 
   vim.api.nvim_set_current_win(cwin)
   return bufnr, winnr
+end
+
+local str_utfindex = vim.str_utfindex
+local function make_position_param()
+  local row, col = unpack(api.nvim_win_get_cursor(0))
+  row = row - 1
+  local line = api.nvim_buf_get_lines(0, row, row+1, true)[1]
+  col = str_utfindex(line, col)
+  return { line = row; character = col; }
+end
+
+function M.make_position_params()
+  return {
+    textDocument = M.make_text_document_params();
+    position = make_position_param()
+  }
+end
+
+function M.make_text_document_params()
+  return { uri = vim.uri_from_bufnr(0) }
 end
 
 return M
